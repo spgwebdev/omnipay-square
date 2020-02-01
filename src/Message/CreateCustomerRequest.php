@@ -10,6 +10,9 @@ use SquareConnect;
  */
 class CreateCustomerRequest extends AbstractRequest
 {
+    protected $liveEndpoint = 'https://connect.squareup.com';
+    protected $testEndpoint = 'https://connect.squareupsandbox.com';
+
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -60,6 +63,41 @@ class CreateCustomerRequest extends AbstractRequest
         return $this->setParameter('email', $value);
     }
 
+    public function setAddress(SquareConnect\Model\Address $value)
+    {
+        return $this->setParameter('address', $value);
+    }
+
+    public function getAddress()
+    {
+        return $this->getParameter('address');
+    }
+
+    public function getReferenceId()
+    {
+        return $this->getParameter('referenceId');
+    }
+
+    public function setReferenceId($value)
+    {
+        return $this->setParameter('referenceId', $value);
+    }
+
+    public function getEndpoint()
+    {
+        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+    }
+
+    private function getApiInstance()
+    {
+        $api_config = new \SquareConnect\Configuration();
+        $api_config->setHost($this->getEndpoint());
+        $api_config->setAccessToken($this->getAccessToken());
+        $api_client = new \SquareConnect\ApiClient($api_config);
+
+        return new \SquareConnect\Api\CustomersApi($api_client);
+    }
+
     public function getData()
     {
         $data = [];
@@ -68,15 +106,16 @@ class CreateCustomerRequest extends AbstractRequest
         $data['family_name'] = $this->getLastName();
         $data['company_name'] = $this->getCompanyName();
         $data['email_address'] = $this->getEmail();
+        $data['reference_id'] = $this->getReferenceId();
+
+        $data['address'] = $this->getAddress();
 
         return $data;
     }
 
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\CustomersApi();
+        $api_instance = $this->getApiInstance();
 
         try {
             $result = $api_instance->createCustomer($data);
