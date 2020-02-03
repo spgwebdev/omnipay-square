@@ -147,6 +147,7 @@ class ChargeRequest extends AbstractRequest
 
         $data = new SquareConnect\Model\CreatePaymentRequest();
         $data->setSourceId($this->getNonce() ?? $this->getCustomerCardId());
+        $data->setVerificationToken($this->getToken());
         $data->setCustomerId($this->getCustomerReference());
         $data->setIdempotencyKey($this->getIdempotencyKey());
         $data->setAmountMoney($amountMoney);
