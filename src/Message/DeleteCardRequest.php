@@ -15,6 +15,8 @@ use SquareConnect;
 
 class DeleteCardRequest extends AbstractRequest
 {
+    protected $liveEndpoint = 'https://connect.squareup.com';
+    protected $testEndpoint = 'https://connect.squareupsandbox.com';
 
     public function getAccessToken()
     {
@@ -57,6 +59,20 @@ class DeleteCardRequest extends AbstractRequest
         return $this->setParameter('cardReference', $value);
     }
 
+    public function getEndpoint()
+    {
+        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+    }
+
+    private function getApiInstance()
+    {
+        $api_config = new \SquareConnect\Configuration();
+        $api_config->setHost($this->getEndpoint());
+        $api_config->setAccessToken($this->getAccessToken());
+        $api_client = new \SquareConnect\ApiClient($api_config);
+
+        return new \SquareConnect\Api\CustomersApi($api_client);
+    }
 
     public function getData()
     {
@@ -70,9 +86,7 @@ class DeleteCardRequest extends AbstractRequest
 
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\CustomersApi();
+        $api_instance = $this->getApiInstance();
 
         try {
             $result = $api_instance->deleteCustomerCard($data['customer_id'], $data['card_id']);
